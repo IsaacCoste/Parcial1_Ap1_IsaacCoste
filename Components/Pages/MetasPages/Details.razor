@@ -1,0 +1,132 @@
+﻿@page "/Detalle"
+@page "/Detalle{MetaId:int}"
+@inject MetasService metaservice
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<div class="card">
+    <div class="card-header">
+        <h1>Index</h1>
+        <div class="d-flex align-items-start">
+            <div class="px-1">
+                <button type="button" class="btn btn-outline-primary" @onclick="Crear">Crear</button>
+            </div>
+            <button type="button" class="btn btn-outline-primary" @onclick="Volver">Volver <i class="bi bi-arrow-return-left" /></button>
+        </div>
+    </div>
+    <div class="card-body">
+        <br>
+        <div class="row">
+            <div class="col-md-0.5">
+                <label>Buscar por:</label>
+            </div>
+            <div class="col-md-3">
+                <InputSelect @bind-Value="Opción" class="form-select">
+                    <option value="0">Seleccione el Campo</option>
+                    <option value="1">Meta Id</option>
+                    <option value="2">Monto</option>
+                </InputSelect>
+            </div>
+            <div class="col-auto">
+                @switch (Opción)
+                {
+                    case 1:
+                        <div class="input-group">
+                            <InputNumber min="0" @bind-Value="Meta.MetaId" class="form-control"></InputNumber>
+                            <button type="button" class="btn btn-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                        break;
+                    case 2:
+                        <div class="input-group">
+                            <InputNumber @bind-Value="Meta.Monto" class="form-control"></InputNumber>
+                            <button type="button" class="btn btn-primary bi bi-search" @onclick="Buscar"></button>
+                        </div>
+                        break;
+                }
+            </div>
+        </div>
+        <br>
+        <table class="table">
+            <thead>
+                <tr bgcolor="9FBB73">
+                    <th>Meta Id</th>
+                    <th>Fecha</th>
+                    <th>Descripci&oacute;n</th>
+                    <th>Monto</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Meta in ListaMetas)
+                {
+                    <tr>
+                        <td>@Meta.MetaId</td>
+                        <td>@Meta.Fecha.ToString("dd/mm/yyyy")</td>
+                        <td>@Meta.Descripción</td>
+                        <td>@Meta.Monto</td>
+                        <td>
+                            <a href="/Edit/@Meta.MetaId" class="bi bi-journal-medical" style="font-size: 1.5em;"></a>
+                        </td>
+                        <td>
+                            <a href="/Delete/@Meta.MetaId" class="bi bi-trash" style="font-size: 1.5em;"></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col-md-9">
+                    <h6 class="align-content-between">Total de Metas: @Total</h6>
+                </div>
+                <div class="col-md-3 text-right">
+                    <h6 class="align-content-end">Total de Monto: @TotalMonto</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? MetaId { get; set; }
+    public Metas Meta { get; set; } = new Metas();
+    public List<Metas> ListaMetas { get; set; } = new List<Metas>();
+    public int Total => ListaMetas.Count;
+    public decimal TotalMonto => ListaMetas.Sum(Meta => Meta.Monto);
+    public int? Opción { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarMetas();
+    }
+    private async Task CargarMetas()
+    {
+        ListaMetas = await metaservice.Listar(a => true);
+        Meta.Fecha = DateTime.Now;
+    }
+    public async Task Buscar()
+    {
+        switch (Opción)
+        {
+            case 1:
+                ListaMetas = await metaservice.Listar(a => a.MetaId == Meta.MetaId);
+                break;
+            case 2:
+                ListaMetas = await metaservice.Listar(a => a.Monto == Meta.Monto);
+                break;
+        }
+    }
+
+    public Task Crear()
+    {
+        NavigationManager.NavigateTo("/Create");
+        return Task.CompletedTask;
+    }
+    public Task Volver()
+    {
+        NavigationManager.NavigateTo("/Index");
+        return Task.CompletedTask;
+    }
+}
