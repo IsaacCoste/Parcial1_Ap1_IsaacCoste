@@ -1,0 +1,71 @@
+﻿@page "/Delete"
+@page "/Delete/{MetaId:int}"
+@inject MetasService metaservice
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<div class="card">
+    <div class="card-header">
+        <h1>Eliminar Metas</h1>
+    </div>
+    <div class="card-body">
+        <h5>¿Está seguro que desea eliminar la Meta?</h5>
+        <dl class="row">
+            <div class="col-md-6">
+                <dt class="col-sm-3">Meta Id:</dt>
+                <dd class="col-sm-9">@Meta.MetaId</dd>
+
+                <dt class="col-sm-3">Fecha:</dt>
+                <dd class="col-sm-9">@Meta.Fecha.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-3">Descripci&oacute;n:</dt>
+                <dd class="col-sm-9">@Meta.Descripción</dd>
+
+                <dt class="col-sm-3">Monto:</dt>
+                <dd class="col-sm-9">@Meta.MetaId</dd>
+            </div>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <button type="button" class="btn btn-danger" @onclick="Eliminar">Eliminar <i class="bi bi-trash3" /></button>
+        <button type="button" class="btn btn-outline-primary" @onclick="Volver">Volver <i class="bi bi-arrow-return-left" /></button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? MetaId { get; set; }
+    public Metas Meta { get; set; } = new Metas();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MetaId > 0)
+        {
+            Meta.MetaId = MetaId.Value;
+            await Buscar();
+        }
+        Meta.Fecha = DateTime.Now;
+    }
+    public async Task Buscar()
+    {
+        var MetaEncontrada = await metaservice.Buscar(Meta.MetaId);
+        if (MetaEncontrada != null)
+        {
+            this.Meta = MetaEncontrada;
+        }
+    }
+    public async Task Eliminar()
+    {
+        if (Meta.MetaId > 0)
+        {
+            await metaservice.Eliminar(this.Meta);
+            await Volver();
+        }
+    }
+    public Task Volver()
+    {
+        NavigationManager.NavigateTo("/Detalle");
+        return Task.CompletedTask;
+    }
+
+}

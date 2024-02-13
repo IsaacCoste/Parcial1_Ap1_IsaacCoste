@@ -1,0 +1,91 @@
+﻿@page "/Edit"
+@page "/Edit/{MetaId:int}"
+@inject MetasService metaservice
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<EditForm Model="Meta" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="card-header">
+        <h1>Edit Metas</h1>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Meta Id:</label>
+                    <div class="input-group">
+                        <InputNumber min="0" @bind-Value="Meta.MetaId" class="form-control"></InputNumber>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Fecha:</label>
+                    <InputDate @bind-Value="Meta.Fecha" class="form-control"></InputDate>
+                    <ValidationMessage For="@(() => Meta.Fecha)" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Descripci&oacute;n</label>
+                    <InputText @bind-Value="Meta.Descripción" class="form-control"></InputText>
+                    <ValidationMessage For="@(() => Meta.Descripción)" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Monto:</label>
+                    <InputNumber @bind-Value="Meta.Monto"></InputNumber>
+                    <ValidationMessage For="@(() => Meta.Monto)" />
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-success">Guardar <i class="bi bi-floppy-fill" /></button>
+            <button type="button" class="btn btn-outline-primary" @onclick="Volver">Volver <i class="bi bi-arrow-return-left" /></button>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int? MetaId { get; set; }
+    public Metas Meta { get; set; } = new Metas();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (MetaId > 0)
+        {
+            Meta.MetaId = MetaId.Value;
+            await Buscar();
+        }
+        Meta.Fecha = DateTime.Now;
+    }
+    public async Task Buscar()
+    {
+        var MetaEncntrada = await metaservice.Buscar(Meta.MetaId);
+        if (MetaEncntrada != null)
+        {
+            this.Meta = MetaEncntrada;
+        }
+    }
+    public async Task<bool> Guardar()
+    {
+        var guardado = await metaservice.Guardar(Meta);
+        if (guardado)
+        {
+            await Volver();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public Task Volver()
+    {
+        NavigationManager.NavigateTo("/Index");
+        return Task.CompletedTask;
+    }
+}

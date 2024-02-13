@@ -1,5 +1,5 @@
-﻿@page "/Index"
-@page "/Index{MetaId:int}"
+﻿@page "/Detalle"
+@page "/Detalle{MetaId:int}"
 @inject MetasService metaservice
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
@@ -11,7 +11,7 @@
             <div class="px-1">
                 <button type="button" class="btn btn-outline-primary" @onclick="Crear">Crear</button>
             </div>
-            <button type="button" class="btn btn-outline-info" @onclick="Detalle">Detalle</button>
+            <button type="button" class="btn btn-outline-primary" @onclick="Volver">Volver <i class="bi bi-arrow-return-left" /></button>
         </div>
     </div>
     <div class="card-body">
@@ -44,7 +44,6 @@
                         break;
                 }
             </div>
-
         </div>
         <br>
         <table class="table">
@@ -54,6 +53,8 @@
                     <th>Fecha</th>
                     <th>Descripci&oacute;n</th>
                     <th>Monto</th>
+                    <th>Editar</th>
+                    <th>Eliminar</th>
                 </tr>
             </thead>
             <tbody>
@@ -64,6 +65,12 @@
                         <td>@Meta.Fecha.ToString("dd/mm/yyyy")</td>
                         <td>@Meta.Descripción</td>
                         <td>@Meta.Monto</td>
+                        <td>
+                            <a href="/Edit/@Meta.MetaId" class="bi bi-journal-medical" style="font-size: 1.5em;"></a>
+                        </td>
+                        <td>
+                            <a href="/Delete/@Meta.MetaId" class="bi bi-trash" style="font-size: 1.5em;"></a>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -94,13 +101,11 @@
     {
         await CargarMetas();
     }
-
     private async Task CargarMetas()
     {
         ListaMetas = await metaservice.Listar(a => true);
         Meta.Fecha = DateTime.Now;
     }
-
     public async Task Buscar()
     {
         switch (Opción)
@@ -119,10 +124,9 @@
         NavigationManager.NavigateTo("/Create");
         return Task.CompletedTask;
     }
-
-    public Task Detalle()
+    public Task Volver()
     {
-        NavigationManager.NavigateTo("/Detalle");
+        NavigationManager.NavigateTo("/Index");
         return Task.CompletedTask;
     }
 }
